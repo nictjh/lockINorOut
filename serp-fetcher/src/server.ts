@@ -189,6 +189,142 @@ app.get('/api/stats', async (req, res) => {
     }
 });
 
+// POST /api/scrape-and-summarize - Scrape articles from specific websites/interests and summarize
+app.post('/api/scrape-and-summarize', async (req, res) => {
+    try {
+        const { interests, websites } = req.body;
+
+        if (!interests || !Array.isArray(interests) || interests.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'interests array is required'
+            });
+        }
+
+        if (!websites || !Array.isArray(websites) || websites.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'websites array is required'
+            });
+        }
+
+        console.log(`Starting scrape pipeline for interests: ${interests.join(', ')} on domains: ${websites.join(', ')}`);
+
+        const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+        const results = [];
+        const maxArticles = 4;
+        let articlesProcessed = 0;
+
+        // Import fetcher functions
+        const { fetchArticles, fetchDetailedContent, callSummarizationAPI } = await import('./fetcher.js');
+
+        for (const interest of interests) {
+            if (articlesProcessed >= maxArticles) break;
+
+            for (const website of websites) {
+                if (articlesProcessed >= maxArticles) break;
+
+                try {
+                    console.log(`\n=== Phase 1: Scraping ${website} for interest: ${interest} ===`);
+                    
+                    // Phase 1: Fetch article links from specific website
+                    const articles = await fetchArticles(interest, website, websites);
+
+                    if (articles.length === 0) {
+                        console.log(`No articles found for ${interest} on ${website}`);
+                        continue;
+                    }
+
+                    console.log(`Found ${articles.length} articles, now fetching full content...`);
+
+                    // Process up to 4 articles total
+                    for (const article of articles) {
+                        if (articlesProcessed >= maxArticles) break;
+
+                        try {
+                            // Check if already summarized
+                            const existingSummary = await prisma.summarizedArticle.findUnique({
+                                where: { url: article.url }
+                            });
+
+                            if (existingSummary) {
+                                console.log(`Already summarized: ${article.title}`);
+                                continue;
+                            }
+
+                            // Phase 2: Fetch detailed content from the article URL
+                            console.log(`\n=== Phase 2: Fetching detailed content for: ${article.title} ===`);
+                            const detailedContent = await fetchDetailedContent(article.url);
+
+                            if (!detailedContent) {
+                                console.warn(`Could not fetch detailed content for ${article.url}`);
+                                continue;
+                            }
+
+                            // Prepare full article with detailed content
+                            const fullArticle = {
+                                title: article.title,
+                                url: article.url,
+                                content: detailedContent.text,
+                                source: article.source || website,
+                                topic: interest,
+                                category: website
+                            };
+
+                            // Phase 3: Summarize
+                            console.log(`\n=== Phase 3: Summarizing: ${article.title} ===`);
+                            const summary = await callSummarizationAPI(fullArticle);
+
+                            if (summary) {
+                                // Save to SummarizedArticle
+                                const summarizedArticle = await prisma.summarizedArticle.create({
+                                    data: {
+                                        title: article.title,
+                                        summary: summary,
+                                        url: article.url,
+                                        source: article.source || website,
+                                        content: detailedContent.text,
+                                        topic: interest,
+                                        timestamp: new Date()
+                                    }
+                                });
+
+                                results.push(summarizedArticle);
+                                articlesProcessed++;
+                                console.log(`✓ Saved summary for: ${article.title}`);
+                            } else {
+                                console.warn(`Failed to get summary for: ${article.title}`);
+                            }
+
+                            await delay(1500); // Rate limiting
+                        } catch (e) {
+                            console.error(`Failed to process article ${article.url}:`, e);
+                        }
+                    }
+
+                    await delay(1000);
+                } catch (e) {
+                    console.error(`Error scraping ${website} for ${interest}:`, e);
+                }
+            }
+        }
+
+        res.json({
+            success: true,
+            message: `Processed ${articlesProcessed} articles`,
+            articlesCount: results.length,
+            articles: results
+        });
+    } catch (error: any) {
+        console.error('Error in scrape-and-summarize:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to scrape and summarize',
+            message: error.message,
+        });
+    }
+});
+
 // GET /api/feed - Get all summarized articles for the feed
 app.get('/api/feed', async (req, res) => {
     try {
@@ -228,6 +364,7 @@ app.listen(PORT, () => {
     console.log(`   GET /api/topics - Get all unique topics`);
     console.log(`   GET /api/stats - Get statistics`);
     console.log(`   GET /api/feed - Get all summarized articles for feed`);
+    console.log(`   POST /api/scrape-and-summarize - Scrape specific websites/interests and summarize (body: {interests: [], websites: []})`);
     console.log(`   GET /health - Health check`);
 });
 

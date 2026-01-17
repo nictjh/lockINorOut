@@ -7,11 +7,13 @@ datasource db {
   provider = "postgresql"
 }
 
+
 model Article {
   id        Int      @id @default(autoincrement())
   title     String
   url       String   @unique
   snippet   String?
+  content   String?  @db.Text
   category  String?
   topic     String
   source    String?
@@ -22,8 +24,11 @@ model SummarizedArticle {
   id        String   @id @default(cuid())
   title     String
   summary   String   @db.Text
+  content   String   @db.Text
   source    String?
-  url       String?  @unique
+  url       String   @unique
+  topic     String
+  category  String?
   timestamp DateTime @default(now())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
