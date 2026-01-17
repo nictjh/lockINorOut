@@ -1,12 +1,19 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import kaboom from 'kaboom';
+  import { LEVELS } from "$lib/config/levels";
 
   let canvasContainer: HTMLElement;
   let gameCanvas: HTMLCanvasElement;
   let gameFinished = false;
+  let nextLevelPath = "";
 
   onMount(() => {
+    // Select a random level (excluding computer-vision which is the current one)
+    const otherLevels = LEVELS.filter(l => l.id !== "computer-vision");
+    const randomLevel = otherLevels[Math.floor(Math.random() * otherLevels.length)];
+    nextLevelPath = randomLevel.path;
+
     const k = kaboom({
       width: 800,
       height: 500,
@@ -51,11 +58,11 @@
 
     // 4. Menu Items (Stacked at center - users dig for spectacles)
     const itemsData = [
-      { name: "Webcam", sprite: "webcam", isCorrect: false },
-      { name: "Default", sprite: "default", isCorrect: false },
-      { name: "VR Headset", sprite: "vrhead", isCorrect: false },
-      { name: "Mouse", sprite: "mouse", isCorrect: false },
       { name: "Spectacles", sprite: "spectacles", isCorrect: true },
+      { name: "Mouse", sprite: "mouse", isCorrect: false },
+      { name: "VR Headset", sprite: "vrhead", isCorrect: false },
+      { name: "Default", sprite: "default", isCorrect: false },
+      { name: "Webcam", sprite: "webcam", isCorrect: false },
     ];
 
     const stackX = 400; // Center of screen
@@ -67,7 +74,7 @@
         k.sprite(item.sprite),
         k.pos(stackX + (i * stackOffset), stackY + (i * stackOffset)),
         k.scale(item.sprite === "default" ? 0.2 : 0.6),
-        k.z(itemsData.length - 1 - i), // Flip stack: Spectacles is behind
+        k.z(i), // Higher z-index = drawn on top and clickable first
         k.area(),
         k.anchor("center"),
         "draggable",
@@ -79,7 +86,9 @@
     let curDrag: any = null;
 
     k.onMousePress(() => {
-      const clicked = k.get("draggable").filter(o => o.isHovering())[0];
+      // Get all draggable items sorted by z-index (highest first = top visually)
+      const draggables = k.get("draggable").sort((a, b) => (b.z || 0) - (a.z || 0));
+      const clicked = draggables.filter(o => o.isHovering())[0];
       if (clicked && !gameFinished) curDrag = clicked;
     });
 
@@ -136,9 +145,12 @@
           <p class="text-white italic mb-6 opacity-80 text-lg">
             "The advanced AI process of giving your laptop prescription lenses so it can finally read your code."
           </p>
-          <button on:click={() => window.location.reload()} class="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-full font-bold">
-            Next Term: Cloud Computing?
-          </button>
+          <a
+            href={nextLevelPath}
+            class="inline-block px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-full font-bold transition-all transform hover:scale-110"
+          >
+            Next Level →
+          </a>
         </div>
       </div>
     {/if}
