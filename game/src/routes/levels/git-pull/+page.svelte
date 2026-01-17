@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import kaboom from 'kaboom';
   import { LEVELS } from "$lib/config/levels";
+  import GameInstructions from "$lib/components/GameInstructions.svelte";
 
   let canvasContainer: HTMLElement;
   let gameCanvas: HTMLCanvasElement;
@@ -92,7 +93,7 @@
     k.onKeyPress("down", () => {
       if (gameFinished || !selectedBox) return;
 
-      selectedBox.pos.y += 80;
+      selectedBox.pos.y += 10; // Way more clicks needed now!
       k.shake(4);
 
       user.scale = k.vec2(1.2, 0.8);
@@ -143,7 +144,16 @@
       {/if}
     </div>
 
-    <div bind:this={canvasContainer} class="canvas-wrapper">
+    <div bind:this={canvasContainer} class="canvas-wrapper relative">
+      <GameInstructions
+        title="Git Pull"
+        instructions={[
+          "Click the 'Git' box to select the repo.",
+          "Spam the DOWN ARROW key to pull.",
+          "Pull hard enough, but select the right repo!"
+        ]}
+        onStart={() => {}}
+      />
       <canvas bind:this={gameCanvas}></canvas>
     </div>
 

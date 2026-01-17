@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import kaboom from 'kaboom';
   import { LEVELS } from "$lib/config/levels";
+  import GameInstructions from "$lib/components/GameInstructions.svelte";
 
   let canvasContainer: HTMLElement;
   let gameCanvas: HTMLCanvasElement;
@@ -134,7 +135,15 @@
       <span>$ What is computer vision?</span>
     </div>
 
-    <div bind:this={canvasContainer} class="flex-grow">
+    <div bind:this={canvasContainer} class="flex-grow relative">
+      <GameInstructions
+        title="Computer Vision"
+        instructions={[
+          "The laptop is blind.",
+          "Drag and drop the correct item onto the webcam / screen."
+        ]}
+        onStart={() => {}}
+      />
       <canvas bind:this={gameCanvas}></canvas>
     </div>
 

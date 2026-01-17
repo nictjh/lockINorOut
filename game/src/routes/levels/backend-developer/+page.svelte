@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import kaboom from 'kaboom';
   import { LEVELS } from "$lib/config/levels";
+  import GameInstructions from "$lib/components/GameInstructions.svelte";
 
   let gameCanvas: HTMLCanvasElement;
   let gameFinished = false;
@@ -196,6 +197,15 @@
     </div>
 
     <div class="relative flex-grow bg-[#0d1117]">
+      <GameInstructions
+        title="Backend Developer"
+        instructions={[
+          "Drag the laptop to rotate it to the BACK.",
+          "Type the code exactly as shown (Blind Typing).",
+          "Don't look at your keyboard - accuracy matters."
+        ]}
+        onStart={() => {}}
+      />
       <canvas bind:this={gameCanvas} class="w-full h-full"></canvas>
     </div>
 

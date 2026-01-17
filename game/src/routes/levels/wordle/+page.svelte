@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import kaboom from 'kaboom';
   import { LEVELS } from "$lib/config/levels";
+  import GameInstructions from "$lib/components/GameInstructions.svelte";
   import { slide } from 'svelte/transition';
 
   let gameCanvas: HTMLCanvasElement;
@@ -128,6 +129,19 @@
           {/each}
         </div>
       {/each}
+      
+      <GameInstructions
+        title="Wordle"
+        instructions={[
+          "Guess the hidden 15-letter term.",
+          "It's like Wordle, but much longer.",
+          "Hints will appear if you struggle (Epochs)."
+        ]}
+        onStart={() => {
+          // Focus window to ensure keyboard capture works immediately
+          window.focus();
+        }}
+      />
     </div>
 
     {#if showResultModal}
