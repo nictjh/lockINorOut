@@ -32,14 +32,14 @@ export const LEVELS: Level[] = [
     path: "/levels/backend-developer",
     order: 3,
   },
-//   {
-//     id: "git-branch",
-//     name: "Git Branch",
-//     description: "Create and manage branches",
-//     icon: "🌿",
-//     path: "/levels/git-branch",
-//     order: 4,
-//   },
+  {
+    id: "wordle",
+    name: "Machine Learning",
+    description: "Implement algorithms that learn from data",
+    icon: "🌿",
+    path: "/levels/wordle",
+    order: 4,
+  },
 //   {
 //     id: "git-commit",
 //     name: "Git Commit",
