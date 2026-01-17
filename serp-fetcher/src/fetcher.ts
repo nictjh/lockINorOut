@@ -1,52 +1,55 @@
-import { search, SafeSearchType } from 'duck-duck-scrape';
+import { Exa } from 'exa-js';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.join(__dirname, '../.env') });
+
+const exa = new Exa(process.env.EXA_API_KEY);
 
 export interface SerpResult {
     title: string;
     url: string;
     description: string;
     source?: string;
+    publishedDate?: string;
 }
 
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+export async function fetchArticles(topic: string, category: string): Promise<SerpResult[]> {
+    console.log(`Fetching ${category} for topic: ${topic}`);
 
-export async function fetchArticles(topic: string, retries = 3): Promise<SerpResult[]> {
-    console.log(`Fetching articles for topic: ${topic}`);
-
-    for (let attempt = 1; attempt <= retries; attempt++) {
-        try {
-            // Add delay before request to avoid rate limiting
-            if (attempt > 1) {
-                const waitTime = attempt * 2000; // Exponential backoff
-                console.log(`Retrying in ${waitTime}ms... (attempt ${attempt}/${retries})`);
-                await delay(waitTime);
+    try {
+        const result = await exa.searchAndContents(
+            `${topic} ${category}`,
+            {
+                type: "neural",
+                useAutoprompt: true,
+                numResults: 10,
+                text: true,
+                livecrawl: "always"
             }
+        );
 
-            const searchResults = await search(topic, {
-                safeSearch: SafeSearchType.STRICT,
-                time: 'w', // Articles from the past week
-            });
-
-            if (searchResults.noResults) {
-                console.log(`No results found for topic: ${topic}`);
-                return [];
-            }
-
-            console.log(`Successfully fetched ${searchResults.results.length} results for ${topic}`);
-            return searchResults.results.map((result: any) => ({
-                title: result.title,
-                url: result.url,
-                description: result.description,
-                source: result.hostname,
-            }));
-        } catch (error: any) {
-            console.error(`Error fetching articles for topic ${topic} (attempt ${attempt}/${retries}):`, error.message);
-
-            if (attempt === retries) {
-                console.error(`Failed after ${retries} attempts`);
-                return [];
-            }
+        if (!result.results || result.results.length === 0) {
+            console.log(`No results found for ${topic} in ${category}`);
+            return [];
         }
-    }
 
-    return [];
+        console.log(`Successfully fetched ${result.results.length} results for ${topic} (${category})`);
+
+        return result.results.map((item: any) => ({
+            title: item.title || 'Untitled',
+            url: item.url,
+            description: item.text ? item.text.substring(0, 300) + '...' : '',
+            source: new URL(item.url).hostname,
+            publishedDate: item.publishedDate
+        }));
+
+    } catch (error: any) {
+        console.error(`Error fetching articles for topic ${topic} (${category}):`, error.message);
+        return [];
+    }
 }

@@ -12,6 +12,7 @@ model Article {
   title     String
   url       String   @unique
   snippet   String?
+  category  String?
   topic     String
   source    String?
   createdAt DateTime @default(now())

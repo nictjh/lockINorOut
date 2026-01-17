@@ -7,38 +7,42 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const TOPICS = ['cybersecurity', 'artificial intelligence'];
+const CATEGORIES = ['News', 'Industry Developments', 'Blogs'];
+
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 async function main() {
-    console.log('Starting SERP article fetcher...');
+    console.log('Starting Exa article fetcher...');
 
-    for (let i = 0; i < TOPICS.length; i++) {
-        const topic = TOPICS[i];
+    for (const topic of TOPICS) {
+        for (const category of CATEGORIES) {
 
-        // Add delay between topics to avoid rate limiting
-        if (i > 0) {
-            console.log('Waiting 3 seconds before next topic...');
-            await delay(3000);
-        }
+            // Add slight delay to be nice to API
+            await delay(1000);
 
-        const articles = await fetchArticles(topic);
-        console.log(`Found ${articles.length} articles for ${topic}`);
+            const articles = await fetchArticles(topic, category);
+            console.log(`Found ${articles.length} articles for ${topic} - ${category}`);
 
-        for (const article of articles) {
-            try {
-                await prisma.article.upsert({
-                    where: { url: article.url },
-                    update: {}, // Don't update if exists, just ignore
-                    create: {
-                        title: article.title,
-                        url: article.url,
-                        snippet: article.description,
-                        topic: topic,
-                        source: article.source,
-                    },
-                });
-            } catch (e) {
-                console.error(`Failed to save article ${article.url}:`, e);
+            for (const article of articles) {
+                try {
+                    await prisma.article.upsert({
+                        where: { url: article.url },
+                        update: {
+                            category: category // Update category if it exists
+                        },
+                        create: {
+                            title: article.title,
+                            url: article.url,
+                            snippet: article.description,
+                            topic: topic,
+                            category: category,
+                            source: article.source,
+                            // You might want to map publishedDate to createdAt or a new field if available
+                        },
+                    });
+                } catch (e) {
+                    console.error(`Failed to save article ${article.url}:`, e);
+                }
             }
         }
     }
