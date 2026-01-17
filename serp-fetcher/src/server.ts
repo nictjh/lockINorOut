@@ -1,21 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import pg from 'pg';
-import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-dotenv.config({ path: path.join(__dirname, '../.env') });
-
-const connectionString = process.env.DATABASE_URL;
-const pool = new pg.Pool({ connectionString });
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
+import { prisma } from '../lib/prisma.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -225,6 +210,5 @@ app.listen(PORT, () => {
 process.on('SIGINT', async () => {
     console.log('\nShutting down gracefully...');
     await prisma.$disconnect();
-    await pool.end();
     process.exit(0);
 });
