@@ -9,6 +9,7 @@
         "start": "node dist/src/index.js",
         "server": "node dist/src/server.js",
         "dev:server": "tsc && node dist/src/server.js",
+        "dev": "tsx src/index.ts",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "keywords": [],
@@ -30,6 +31,7 @@
         "@types/pg": "^8.16.0",
         "prisma": "^7.2.0",
         "ts-node": "^10.9.2",
+        "tsx": "^4.7.0",
         "typescript": "^5.3.3"
     }
 }

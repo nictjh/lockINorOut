@@ -10,10 +10,12 @@ dotenv.config({ path: path.join(__dirname, '../.env') });
 
 const exa = new Exa(process.env.EXA_API_KEY);
 
+
 export interface SerpResult {
     title: string;
     url: string;
     description: string;
+    content?: string;
     source?: string;
     publishedDate?: string;
 }
@@ -104,7 +106,7 @@ async function callSummarizationAPI(article: FullArticleContent): Promise<string
 /**
  * Fetch detailed content for a specific URL using Exa's getContents
  */
-async function fetchDetailedContent(url: string): Promise<{ title: string; text: string } | null> {
+export async function fetchDetailedContent(url: string): Promise<{ title: string; text: string } | null> {
     try {
         const result = await exa.getContents([url], {
             text: { maxCharacters: 5000, includeHtmlTags: false }
@@ -124,19 +126,20 @@ async function fetchDetailedContent(url: string): Promise<{ title: string; text:
     return null;
 }
 
-export async function fetchArticles(topic: string, category: string): Promise<SerpResult[]> {
-    console.log(`Fetching ${category} for topic: ${topic}`);
+export async function fetchArticles(topic: string, category: string, domains?: string[]): Promise<SerpResult[]> {
+    console.log(`Fetching ${category} for topic: ${topic}${domains ? ` from domains: ${domains.join(', ')}` : ''}`);
 
     try {
         // Initial search
         const searchResult = await exa.searchAndContents(
-            `${topic} ${category}`,
+            `${topic}`,
             {
                 type: "neural",
                 useAutoprompt: true,
                 numResults: 10,
                 text: true,
-                livecrawl: "always"
+                livecrawl: "always",
+                ...(domains && domains.length > 0 && { domain: domains })  // Add domain filter if provided
             }
         );
 
@@ -161,6 +164,7 @@ export async function fetchArticles(topic: string, category: string): Promise<Se
                         title: detailedContent.title || cleanText(item.text, 200) || 'Untitled',
                         url: item.url,
                         description: detailedContent.text || cleanText(item.text, 500) || '',
+                        content: detailedContent.text,
                         source: new URL(item.url).hostname,
                         publishedDate: item.publishedDate
                     });
@@ -170,6 +174,7 @@ export async function fetchArticles(topic: string, category: string): Promise<Se
                         title: cleanText(item.text, 200) || 'Untitled',
                         url: item.url,
                         description: cleanText(item.text, 500) || '',
+                        content: item.text || '',
                         source: new URL(item.url).hostname,
                         publishedDate: item.publishedDate
                     });

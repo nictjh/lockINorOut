@@ -1,5 +1,5 @@
 import { prisma } from '../lib/prisma.js';
-import { fetchArticles, fetchArticlesWithContent, callSummarizationAPI } from './fetcher.js';
+import { fetchArticles, fetchArticlesWithContent, callSummarizationAPI, FullArticleContent } from './fetcher.js';
 import { fileURLToPath } from 'url';
 import path from 'path';
 
@@ -20,21 +20,24 @@ async function main() {
             // Add slight delay to be nice to API
             await delay(1000);
 
-            // Fetch articles with basic metadata (for the Article table)
+            // Phase 1: Fetch and Store in Article (Staging)
+            console.log(`Phase 1: Fetching articles for ${topic} - ${category}`);
             const articles = await fetchArticles(topic, category);
-            console.log(`Found ${articles.length} articles for ${topic} - ${category}`);
+            console.log(`Found ${articles.length} articles`);
 
             for (const article of articles) {
                 try {
                     await prisma.article.upsert({
                         where: { url: article.url },
                         update: {
-                            category: category // Update category if it exists
+                            category: category,
+                            content: article.content // Update content if re-fetching
                         },
                         create: {
                             title: article.title,
                             url: article.url,
                             snippet: article.description,
+                            content: article.content, // Store full content
                             topic: topic,
                             category: category,
                             source: article.source,
@@ -45,62 +48,71 @@ async function main() {
                 }
             }
 
-            // Now fetch with full content for summarization
-            await delay(2000); // Longer delay before heavy operations
+            // Phase 2: Process from Article -> SummarizedArticle
+            console.log(`Phase 2: Processing stored articles for ${topic} - ${category}`);
 
-            const articlesWithContent = await fetchArticlesWithContent(topic, category);
-            console.log(`Retrieved ${articlesWithContent.length} articles with full content`);
+            // Fetch articles from DB that have content
+            const storedArticles = await prisma.article.findMany({
+                where: {
+                    topic: topic,
+                    category: category,
+                    content: { not: null } // Only process ones with content
+                }
+            });
 
-            for (const fullArticle of articlesWithContent) {
+            console.log(`Found ${storedArticles.length} stored articles to process`);
+
+            for (const article of storedArticles) {
                 try {
-                    // Find the article ID
-                    const article = await prisma.article.findUnique({
-                        where: { url: fullArticle.url }
-                    });
+                    if (!article.content) continue;
 
-                    if (!article) {
-                        console.warn(`Article not found for URL: ${fullArticle.url}`);
-                        continue;
-                    }
-
-                    // Check if summary already exists
-                    const existingSummary = await prisma.summaryArticle.findUnique({
-                        where: { articleId: article.id }
+                    // Check if already summarized
+                    const existingSummary = await prisma.summarizedArticle.findUnique({
+                        where: { url: article.url }
                     });
 
                     if (existingSummary) {
-                        console.log(`Summary already exists for: ${fullArticle.title}`);
+                        console.log(`Already summarized: ${article.title}`);
                         continue;
                     }
 
+                    // Prepare object for summarizer
+                    const fullArticle: FullArticleContent = {
+                        title: article.title,
+                        url: article.url,
+                        content: article.content,
+                        source: article.source || '',
+                        topic: article.topic,
+                        category: article.category || ''
+                    };
+
                     // Get summary from API
-                    console.log(`Summarizing: ${fullArticle.title}`);
+                    console.log(`Summarizing: ${article.title}`);
                     const summary = await callSummarizationAPI(fullArticle);
 
                     if (summary) {
-                        // Save to database
-                        await prisma.summaryArticle.create({
+                        // Save to SummarizedArticle
+                        await prisma.summarizedArticle.create({
                             data: {
-                                articleId: article.id,
-                                title: fullArticle.title,
+                                title: article.title,
                                 summary: summary,
-                                content: fullArticle.content,
-                                url: fullArticle.url,
-                                topic: fullArticle.topic,
-                                category: fullArticle.category,
-                                source: fullArticle.source
+                                content: article.content,
+                                url: article.url,
+                                topic: article.topic,
+                                category: article.category,
+                                source: article.source
                             }
                         });
-                        console.log(`✓ Saved summary for: ${fullArticle.title}`);
+                        console.log(`✓ Saved summary for: ${article.title}`);
                     } else {
-                        console.warn(`Failed to get summary for: ${fullArticle.title}`);
+                        console.warn(`Failed to get summary for: ${article.title}`);
                     }
 
                     // Delay between summarization calls
                     await delay(1500);
 
                 } catch (e) {
-                    console.error(`Failed to process article ${fullArticle.url}:`, e);
+                    console.error(`Failed to process article ${article.url}:`, e);
                 }
             }
         }
