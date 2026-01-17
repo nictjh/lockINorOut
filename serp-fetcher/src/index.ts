@@ -18,11 +18,20 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 const TOPICS = ['cybersecurity', 'artificial intelligence'];
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 async function main() {
     console.log('Starting SERP article fetcher...');
 
-    for (const topic of TOPICS) {
+    for (let i = 0; i < TOPICS.length; i++) {
+        const topic = TOPICS[i];
+
+        // Add delay between topics to avoid rate limiting
+        if (i > 0) {
+            console.log('Waiting 3 seconds before next topic...');
+            await delay(3000);
+        }
+
         const articles = await fetchArticles(topic);
         console.log(`Found ${articles.length} articles for ${topic}`);
 
