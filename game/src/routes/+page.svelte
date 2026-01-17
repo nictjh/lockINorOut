@@ -1,66 +1,119 @@
 <script lang="ts">
-  import { LEVELS } from "$lib/config/levels";
+  // Track which card is expanded by its title (or use an ID)
+  let expandedItem = null;
+
+  const toggleExpand = (title) => {
+    expandedItem = expandedItem === title ? null : title;
+  };
+
+  const feedItems = [
+    {
+      type: 'Newsletter',
+      title: 'The Pragmatic Engineer',
+      desc: 'How Big Tech handles migrations.',
+      // Extended the summary so you can test the scroll
+      summary: 'Large-scale migrations are never just about code. This issue explores the social engineering required to move 1,000+ engineers to a new framework without losing velocity. We also deep-dive into the "Migration Tax" and how to justify technical debt payments to non-technical stakeholders while maintaining a shipping culture.',
+      meta: 'New Issue',
+      color: 'from-orange-600',
+      logo: 'N',
+      cta: 'Read Full Issue'
+    },
+    {
+      type: 'GitHub',
+      title: 'microsoft/fluentui',
+      desc: 'A set of MS focused UI components for building web apps.',
+      meta: '⭐ 16.4k stars',
+      color: 'from-blue-600',
+      logo: 'G',
+      cta: 'View Repository'
+    },
+    {
+      type: 'LinkedIn',
+      title: 'The Future of AI Context',
+      desc: 'Why 1M+ context windows are the new RAM for developers.',
+      meta: 'Shared by 400+ people',
+      color: 'from-purple-600',
+      logo: 'in',
+      cta: 'View Post'
+    }
+  ];
 </script>
 
-<svelte:head>
-  <title>FocusLock - Curated Feed</title>
-</svelte:head>
+<main class="h-screen w-full overflow-y-scroll snap-y snap-mandatory bg-[#05070a] scroll-smooth">
 
-<main class="min-h-screen w-full bg-gradient-to-br from-[#05070a] via-[#0f1119] to-[#1a1d2e] p-8">
-  <!-- Header -->
-  <div class="max-w-6xl mx-auto mb-12">
-    <h1 class="text-5xl font-bold text-white mb-2">Curated Feed</h1>
-    <p class="text-xl text-gray-400">Your personalized reading list based on your interests</p>
-  </div>
+  {#each feedItems as item}
+    <section class="h-screen w-full snap-start flex items-center justify-center p-4 md:p-8">
 
-  <!-- Placeholder Grid -->
-  <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    {#each Array(6) as _, i}
-      <div
-        class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-6 border border-slate-700 hover:border-purple-500 transition-all cursor-pointer group"
-      >
-        <!-- Placeholder Image -->
-        <div class="w-full h-40 bg-gradient-to-br from-purple-900 to-slate-900 rounded-md mb-4 flex items-center justify-center border border-slate-600 group-hover:border-purple-400 transition-colors">
-          <span class="text-slate-500 text-sm">Article {i + 1}</span>
+      <div class="relative w-full max-w-xl h-[85vh] bg-gradient-to-b {item.color} via-slate-900 to-[#05070a] rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl flex flex-col p-8 md:p-10 transition-all duration-500">
+
+        <div class="flex justify-between items-start mb-6 transition-opacity {expandedItem === item.title ? 'opacity-30' : 'opacity-100'}">
+          <div class="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-[10px] font-bold text-white uppercase tracking-widest border border-white/20">
+            {item.type}
+          </div>
+          <span class="text-5xl font-black text-white/20 select-none tracking-tighter">{item.logo}</span>
         </div>
 
-        <!-- Placeholder Content -->
-        <h2 class="text-lg font-semibold text-white mb-2 bg-slate-700 h-6 rounded w-4/5"></h2>
-        <p class="text-gray-400 text-sm mb-4 space-y-2">
-          <span class="block bg-slate-700 h-4 rounded w-full"></span>
-          <span class="block bg-slate-700 h-4 rounded w-5/6"></span>
-        </p>
+        <div class="flex-grow flex flex-col justify-start overflow-hidden">
+          <h2 class="font-bold text-white mb-4 leading-tight tracking-tight transition-all duration-500 {expandedItem === item.title ? 'text-2xl opacity-60' : 'text-4xl md:text-5xl'}">
+            {item.title}
+          </h2>
 
-        <!-- Placeholder Meta -->
-        <div class="flex items-center justify-between pt-4 border-t border-slate-700">
-          <span class="text-xs text-gray-500 bg-slate-700 h-4 rounded w-20"></span>
-          <span class="text-xs text-gray-500 bg-slate-700 h-4 rounded w-16"></span>
+          {#if expandedItem !== item.title}
+            <p class="text-xl text-white/90 font-medium mb-6">
+              {item.desc}
+            </p>
+          {/if}
+
+          {#if item.type === 'Newsletter' && item.summary}
+            <div class="relative border-t border-white/10 transition-all duration-500 {expandedItem === item.title ? 'h-full overflow-y-auto pt-4' : 'pt-6 h-auto'}">
+              <p class="text-gray-400 leading-relaxed text-base md:text-lg">
+                {#if expandedItem === item.title}
+                  {item.summary}
+                {:else}
+                  {item.summary.slice(0, 100)}<span class="text-white/40 italic ml-1">...</span>
+                {/if}
+              </p>
+            </div>
+          {/if}
+
+          {#if item.type !== 'Newsletter'}
+            <div class="mt-4 w-full h-32 bg-white/5 rounded-2xl border border-white/5 flex items-center justify-center italic text-white/20">
+              Preview visual for {item.type}
+            </div>
+          {/if}
         </div>
+
+        <div class="flex items-center justify-between pt-6 border-t border-white/10 mt-auto">
+          <div class="flex flex-col">
+            <span class="text-xs text-gray-500 uppercase tracking-tighter">Engagement</span>
+            <span class="text-sm text-gray-300 font-semibold">{item.meta}</span>
+          </div>
+
+          <button
+            on:click={() => item.type === 'Newsletter' ? toggleExpand(item.title) : window.open('#')}
+            class="px-8 py-3 bg-white text-black rounded-full font-bold hover:scale-105 active:scale-95 transition-all shadow-lg"
+          >
+            {expandedItem === item.title ? 'Close' : item.cta}
+          </button>
+        </div>
+
       </div>
-    {/each}
-  </div>
+    </section>
+  {/each}
 
-  <!-- Settings Info -->
-  <div class="max-w-6xl mx-auto mt-16 p-6 bg-slate-800/50 rounded-lg border border-slate-700">
-    <h3 class="text-lg font-semibold text-white mb-2">✨ Coming Soon</h3>
-    <p class="text-gray-400">
-      Your feed will be populated based on your interests and preferred websites. Configure your preferences in the VS Code settings.
-    </p>
-  </div>
-
-  <!-- Navigation Link -->
-  <div class="max-w-6xl mx-auto mt-8 text-center">
-    <a
-      href="/game"
-      class="inline-block px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-semibold transition-all transform hover:scale-105"
-    >
-      Play CS Terms Game →
-    </a>
+  <div class="fixed top-8 left-8 z-50">
+     <a href="/game" class="group flex items-center gap-3 px-4 py-2 bg-black/40 backdrop-blur-xl border border-white/10 rounded-full text-white hover:border-white/40 transition-all">
+       <span class="group-hover:-translate-x-1 transition-transform">←</span>
+       <span class="text-sm font-medium">Exit Feed</span>
+     </a>
   </div>
 </main>
 
-<style lang="postcss">
-  :global(body) {
-    @apply bg-[#05070a];
-  }
+<style>
+  main::-webkit-scrollbar { display: none; }
+  main { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Smooth scrollbar for the internal summary text */
+  div::-webkit-scrollbar { width: 4px; }
+  div::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
 </style>
