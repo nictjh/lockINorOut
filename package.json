@@ -21,6 +21,27 @@
         "title": "FocusLock: Chat Send"
       }
     ],
+    "configuration": {
+      "title": "FocusLock",
+      "properties": {
+        "focuslock.interests": {
+          "type": "array",
+          "default": ["Technology", "Programming", "AI", "Startups"],
+          "description": "List of topics you're interested in for your personalized feed",
+          "items": {
+            "type": "string"
+          }
+        },
+        "focuslock.websites": {
+          "type": "array",
+          "default": ["https://www.linkedin.com/feed/", "https://tldr.tech"],
+          "description": "Websites or sources you want to get content from (e.g., LinkedIn, Newsletter, Twitter, Reddit)",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "keybindings": [
       {
         "key": "enter",

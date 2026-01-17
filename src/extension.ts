@@ -43,15 +43,19 @@ function showGenerationOverlay() {
 
 	overlayPanel = vscode.window.createWebviewPanel(
 		'copilotOverlay',
-		'Copilot Generating',
-		vscode.ViewColumn.One,
+		'FocusLock Feed',
+		{
+			viewColumn: vscode.ViewColumn.Active,
+			preserveFocus: false
+		},
 		{
 			enableScripts: true,
-			retainContextWhenHidden: true
+			retainContextWhenHidden: true,
+			localResourceRoots: []
 		}
 	);
 
-	overlayPanel.webview.html = getOverlayHtml();
+	overlayPanel.webview.html = getOverlayHtmlFromServer();
 
 	// Handle messages from webview
 	overlayPanel.webview.onDidReceiveMessage((message) => {
@@ -80,13 +84,14 @@ function showCompletionPopup() {
 	);
 }
 
-function getOverlayHtml(): string {
+function getOverlayHtmlFromServer(): string {
+	const serverUrl = 'http://localhost:5173';
 	return `<!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Copilot Generating...</title>
+	<title>FocusLock Feed</title>
 	<style>
 		* {
 			margin: 0;
@@ -94,31 +99,47 @@ function getOverlayHtml(): string {
 			box-sizing: border-box;
 		}
 
-		body {
-			width: 100vw;
-			height: 100vh;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			background: rgba(0, 0, 0, 0.7);
-			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-			overflow: hidden;
+		html, body {
+			width: 100%;
+			height: 100%;
+			margin: 0;
+			padding: 0;
 		}
 
-		.overlay-container {
+		body {
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+			overflow: hidden;
+			background: transparent;
+		}
+
+		#iframe-container {
 			display: flex;
-			flex-direction: column;
+			width: 100vw;
+			height: 100vh;
+			border: none;
+		}
+
+		iframe {
+			flex: 1;
+			border: none;
+			width: 100%;
+			height: 100%;
+		}
+
+		.loading {
+			width: 100%;
+			height: 100%;
+			display: flex;
 			align-items: center;
 			justify-content: center;
-			gap: 2rem;
-			padding: 2rem;
+			background: rgba(0, 0, 0, 0.05);
 		}
 
 		.spinner {
-			width: 60px;
-			height: 60px;
-			border: 4px solid rgba(255, 255, 255, 0.3);
-			border-top-color: #fff;
+			width: 40px;
+			height: 40px;
+			border: 3px solid rgba(0, 0, 0, 0.1);
+			border-top-color: #007acc;
 			border-radius: 50%;
 			animation: spin 1s linear infinite;
 		}
@@ -129,85 +150,102 @@ function getOverlayHtml(): string {
 			}
 		}
 
-		.text {
-			color: #fff;
-			font-size: 1.2rem;
-			text-align: center;
+		.error-container {
+			padding: 20px;
+			color: #d32f2f;
 		}
 
-		.status {
-			color: rgba(255, 255, 255, 0.8);
-			font-size: 0.95rem;
-			margin-top: 0.5rem;
-		}
-
-		.pulse-dot {
-			display: inline-block;
-			width: 8px;
-			height: 8px;
-			background: #4CAF50;
-			border-radius: 50%;
-			margin: 0 0.3rem;
-			animation: pulse 1.5s ease-in-out infinite;
-		}
-
-		@keyframes pulse {
-			0%, 100% {
-				opacity: 1;
-				transform: scale(1);
-			}
-			50% {
-				opacity: 0.5;
-				transform: scale(1.2);
-			}
-		}
-
-		.close-btn {
-			position: absolute;
-			bottom: 2rem;
-			padding: 0.75rem 1.5rem;
-			background: rgba(255, 255, 255, 0.2);
-			color: #fff;
-			border: 1px solid rgba(255, 255, 255, 0.4);
-			border-radius: 4px;
-			cursor: pointer;
-			font-size: 0.9rem;
-			transition: all 0.3s ease;
-		}
-
-		.close-btn:hover {
-			background: rgba(255, 255, 255, 0.3);
-			border-color: rgba(255, 255, 255, 0.6);
+		.error-container code {
+			background: #f5f5f5;
+			padding: 2px 6px;
+			border-radius: 3px;
+			font-family: monospace;
 		}
 	</style>
 </head>
 <body>
-	<div class="overlay-container">
-		<div class="spinner"></div>
-		<div class="text">
-			Copilot is generating...
-			<div class="status">
-				<span class="pulse-dot"></span>
-				Processing your request
-				<span class="pulse-dot"></span>
-			</div>
+	<div id="iframe-container">
+		<div class="loading">
+			<div class="spinner"></div>
 		</div>
 	</div>
-	<button class="close-btn" onclick="closeOverlay()">Close (or press Cmd+Shift+G)</button>
 
 	<script>
-		const vscode = acquireVsCodeApi();
+		const serverUrl = '${serverUrl}';
+		let iframeCreated = false;
 
-		function closeOverlay() {
-			vscode.postMessage({ command: 'close' });
+		function createIframe() {
+			const container = document.getElementById('iframe-container');
+			
+			// Create iframe to load your game server
+			const iframe = document.createElement('iframe');
+			iframe.src = serverUrl;
+			iframe.style.width = '100%';
+			iframe.style.height = '100%';
+			iframe.style.border = 'none';
+			iframe.style.margin = '0';
+			iframe.style.padding = '0';
+			
+			// Handle iframe load
+			iframe.onload = () => {
+				console.log('Feed loaded successfully');
+				iframeCreated = true;
+			};
+			
+			// Handle iframe errors
+			iframe.onerror = () => {
+				console.error('Failed to load iframe');
+				showError('Failed to connect to server');
+			};
+			
+			container.innerHTML = '';
+			container.appendChild(iframe);
 		}
 
-		// Also allow Escape key to close
-		document.addEventListener('keydown', (event) => {
-			if (event.key === 'Escape') {
-				closeOverlay();
+		function showError(message) {
+			const container = document.getElementById('iframe-container');
+			container.innerHTML = \`
+				<div class="error-container">
+					<p><strong>Error loading feed</strong></p>
+					<p>\${message}</p>
+					<p style="margin-top: 10px;">Make sure your game dev server is running:</p>
+					<code>cd game && npm run dev</code>
+					<p style="margin-top: 10px; color: #666; font-size: 0.9em;">
+						Server URL: <code>${serverUrl}</code>
+					</p>
+					<button onclick="location.reload()" style="margin-top: 10px; padding: 5px 10px; cursor: pointer;">
+						Retry
+					</button>
+				</div>
+			\`;
+		}
+
+		// Attempt to load iframe after a short delay
+		setTimeout(() => {
+			try {
+				createIframe();
+			} catch (error) {
+				console.error('Error creating iframe:', error);
+				showError(error.message);
 			}
-		});
+		}, 500);
+
+		// Retry logic - check if server is reachable
+		const checkServerInterval = setInterval(() => {
+			if (!iframeCreated) {
+				fetch(serverUrl, { method: 'HEAD' })
+					.then(() => {
+						console.log('Server is now reachable, reloading iframe');
+						createIframe();
+						clearInterval(checkServerInterval);
+					})
+					.catch(() => {
+						console.log('Server still not reachable');
+					});
+			} else {
+				clearInterval(checkServerInterval);
+			}
+		}, 2000);
 	</script>
 </body>
 </html>`;
