@@ -24,14 +24,14 @@ export const LEVELS: Level[] = [
     path: "/levels/computer-vision",
     order: 2,
   },
-//   {
-//     id: "git-merge",
-//     name: "Git Merge",
-//     description: "Merge branches without causing conflicts",
-//     icon: "🔀",
-//     path: "/levels/git-merge",
-//     order: 3,
-//   },
+  {
+    id: "backend-developer",
+    name: "Backend Developer",
+    description: "Build and maintain server-side applications",
+    icon: "🔀",
+    path: "/levels/backend-developer",
+    order: 3,
+  },
 //   {
 //     id: "git-branch",
 //     name: "Git Branch",
