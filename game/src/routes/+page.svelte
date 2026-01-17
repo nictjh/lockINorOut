@@ -5,26 +5,34 @@
   let canvasContainer: HTMLElement;
   let gameCanvas: HTMLCanvasElement;
   let gameFinished = false;
-  let selectedBoxName = ""; // Track what the user clicked
+  let selectedBoxName = "";
 
   onMount(() => {
     const k = kaboom({
-      // We don't need 'parent' if we strictly provide 'canvas'
-      width: canvasContainer.offsetWidth,
-      height: canvasContainer.offsetHeight,
+      width: 800,
+      height: 500,
       canvas: gameCanvas,
       background: [13, 17, 23],
     });
 
-    const boxNames = ["SVN", "Mercurial", "Git", "Zip File"];
-    
+    const boxNames = ["SVN", "mercurial", "Git", "Zip File"];
+    let selectedBox: any = null;
+
+    // 1. ADD THE "USER" AT THE BOTTOM
+    const user = k.add([
+      k.text("👤", { size: 60 }), // Using an emoji for speed, or use k.rect()
+      k.pos(k.width() / 2, k.height() - 40),
+      k.anchor("center"),
+      "user"
+    ]);
+
     boxNames.forEach((name, index) => {
       const xPos = (k.width() / (boxNames.length + 1)) * (index + 1);
-      
+
       const box = k.add([
         k.rect(80, 80),
-        k.pos(xPos, k.height() / 2),
-        k.color(name === "Git" ? [145, 71, 255] : [100, 100, 100]),
+        k.pos(xPos, 150), // Start higher up
+        k.color(100, 100, 100),
         k.area(),
         k.anchor("center"),
         "repo",
@@ -32,48 +40,79 @@
       ]);
 
       k.add([
-        k.text(name, { size: 16 }),
-        k.pos(xPos, k.height() / 2 - 60),
+        k.text(name, { size: 14 }),
+        k.pos(xPos, 150 - 60),
         k.anchor("center"),
       ]);
 
-      // NEW: Selection Logic
       box.onClick(() => {
         selectedBoxName = name;
-        // Visual feedback for selection
-        k.get("repo").forEach(b => b.use(k.outline(0))); // Remove other outlines
-        box.use(k.outline(4, [255, 255, 255])); // Add white outline to selected
+        selectedBox = box;
+        user.pos.x = box.pos.x; // Move user under the selected box
+        k.get("repo").forEach(b => b.color = b.name === name ? new k.Color(145, 71, 255) : new k.Color(100, 100, 100));
       });
     });
 
-    k.onKeyPress("down", () => {
-      if (gameFinished || !selectedBoxName) return;
+    // 2. REALISTIC ROPE DRAWING
+    k.onDraw(() => {
+      if (selectedBox) {
+        const start = selectedBox.pos;
+        const end = user.pos;
 
-      k.get("repo").forEach((b) => {
-        if (b.name === selectedBoxName) {
-          b.move(0, 1500);
-          k.shake(2);
+        // Draw the main brown rope
+        k.drawLine({
+          p1: start,
+          p2: end,
+          width: 8,
+          color: k.rgb(139, 69, 19), // Brown
+        });
 
-          if (b.name === "Git" && b.pos.y > k.height() - 60) {
-            gameFinished = true;
-            showWinEffect(k);
-          } else if (b.name !== "Git" && b.pos.y > k.height() - 60) {
-              // Wrong box pulled!
-              k.shake(10);
-              b.pos.y = k.height() / 2; // Reset it
-              alert(`That's ${b.name}, not Git! It won't break the internet correctly.`);
-          }
+        // Draw the "twisted" black dividers
+        const distance = start.dist(end);
+        for (let i = 0; i < distance; i += 15) {
+          const ratio = i / distance;
+          const p = start.lerp(end, ratio);
+          k.drawRect({
+            pos: p,
+            width: 8,
+            height: 2,
+            angle: 45,
+            color: k.rgb(0, 0, 0),
+            anchor: "center"
+          });
         }
-      });
+      }
+    });
+
+    // 3. FASTER PULLING LOGIC
+    k.onKeyPress("down", () => {
+      if (gameFinished || !selectedBox) return;
+
+      // Move box down significantly
+      selectedBox.pos.y += 80;
+      k.shake(4);
+
+      // Animate User (Squat effect)
+      user.scale = k.vec2(1.2, 0.8);
+      k.wait(0.1, () => user.scale = k.vec2(1));
+
+      if (selectedBox.name === "Git" && selectedBox.pos.y > k.height() - 100) {
+        gameFinished = true;
+        showWinEffect(k);
+      } else if (selectedBox.name !== "Git" && selectedBox.pos.y > k.height() - 100) {
+        k.shake(15);
+        selectedBox.pos.y = 150; // Reset
+        alert("The internet refuses to pull this non-Git garbage.");
+      }
     });
   });
 
   function showWinEffect(k) {
     k.add([
-      k.text("PULL SUCCESSFUL", { size: 48 }),
-      k.pos(k.center()),
-      k.anchor("center"),
-      k.color(0, 255, 0),
+        k.text("PULL SUCCESSFUL", { size: 48 }),
+        k.pos(k.center()),
+        k.anchor("center"),
+        k.color(0, 255, 0),
     ]);
   }
 </script>
@@ -82,52 +121,46 @@
   .canvas-wrapper {
     position: relative;
     width: 100%;
-    flex: 1;
-    overflow: hidden;
+    height: 100%;
+    background: #0d1117;
   }
   
-  .canvas-wrapper :global(canvas) {
-    display: block;
+  /* Ensure the canvas fills the container */
+  :global(canvas) {
     width: 100% !important;
     height: 100% !important;
   }
-
-  .top-bar {
-    position: relative;
-    z-index: 100;
-    flex-shrink: 0;
-  }
 </style>
 
-<main class="min-h-screen w-full bg-[#0d1117] flex flex-col items-center justify-center p-8">
-  <!-- Game Container -->
-  <div class="relative w-[800px] h-[600px] border-4 border-gray-700 rounded-lg shadow-2xl overflow-hidden flex flex-col bg-gray-900">
+<main class="min-h-screen w-full bg-[#05070a] flex items-center justify-center p-4">
+  <div class="relative w-[800px] h-[600px] border-4 border-gray-700 rounded-xl overflow-hidden flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.5)]">
     
-    <div class="top-bar p-4 bg-black/40 text-green-400 font-mono text-xl border-b border-gray-800">
-      TASK: git pull {selectedBoxName ? `(Selected: ${selectedBoxName})` : "- Click a box to select"}
+    <div class="p-4 bg-gray-900 text-green-400 font-mono text-lg border-b border-gray-800 flex justify-between items-center">
+      <span>$ git pull {selectedBoxName}</span>
+      {#if !selectedBoxName}
+        <span class="animate-pulse text-yellow-500">Select a box to begin...</span>
+      {/if}
     </div>
 
-    <div bind:this={canvasContainer} class="canvas-wrapper bg-[#0d1117]">
+    <div bind:this={canvasContainer} class="canvas-wrapper">
       <canvas bind:this={gameCanvas}></canvas>
     </div>
 
     {#if gameFinished}
-      <div class="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-md z-[50]">
-        <div class="bg-gray-900 p-8 rounded-2xl border-2 border-purple-500 max-w-md text-center shadow-2xl animate-bounce">
-          <h1 class="text-3xl font-bold text-purple-400 mb-4">Git Pull (Verb)</h1>
-          <p class="text-xl text-white italic">
-            "The act of using gravity and extreme physical force to drag a specific purple box into the floor until the internet breaks."
+      <div class="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-50">
+        <div class="bg-gray-900 p-8 rounded-2xl border-2 border-purple-500 text-center shadow-2xl">
+          <h1 class="text-3xl font-bold text-purple-400 mb-2">Git Pull</h1>
+          <p class="text-white italic mb-6 opacity-80 text-lg">
+            "The physical act of pulling a purple box until the internet breaks."
           </p>
           <button
             on:click={() => window.location.reload()}
-            class="mt-6 px-6 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-500 transition pointer-events-auto"
+            class="px-8 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-full font-bold transition-all transform hover:scale-110"
           >
-            Next Term: Git Push?
+            Load Next Level: Git Push
           </button>
         </div>
       </div>
     {/if}
   </div>
-
-  
 </main>
