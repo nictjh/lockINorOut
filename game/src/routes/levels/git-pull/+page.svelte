@@ -1,20 +1,13 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import kaboom from 'kaboom';
-  import { LEVELS } from "$lib/config/levels";
 
   let canvasContainer: HTMLElement;
   let gameCanvas: HTMLCanvasElement;
   let gameFinished = false;
   let selectedBoxName = "";
-  let nextLevelPath = "";
 
   onMount(() => {
-    // Select a random level (excluding git-pull which is the current one)
-    const otherLevels = LEVELS.filter(l => l.id !== "git-pull");
-    const randomLevel = otherLevels[Math.floor(Math.random() * otherLevels.length)];
-    nextLevelPath = randomLevel.path;
-
     const k = kaboom({
       width: 800,
       height: 500,
@@ -155,20 +148,12 @@
           <p class="text-white italic mb-6 opacity-80 text-lg">
             "The physical act of pulling a purple box until the internet breaks."
           </p>
-          <div class="flex gap-4 justify-center">
-            <a
-              href={nextLevelPath}
-              class="inline-block px-8 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-full font-bold transition-all transform hover:scale-110"
-            >
-              Next Level →
-            </a>
-            <a
-              href="/leaderboard"
-              class="inline-block px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-full font-bold transition-all transform hover:scale-110"
-            >
-              View Leaderboard
-            </a>
-          </div>
+          <a
+            href="/"
+            class="inline-block px-8 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-full font-bold transition-all transform hover:scale-110"
+          >
+            Back to Levels
+          </a>
         </div>
       </div>
     {/if}
