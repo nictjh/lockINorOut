@@ -189,6 +189,30 @@ app.get('/api/stats', async (req, res) => {
     }
 });
 
+// GET /api/feed - Get all summarized articles for the feed
+app.get('/api/feed', async (req, res) => {
+    try {
+        const articles = await prisma.summarizedArticle.findMany({
+            orderBy: {
+                timestamp: 'desc'
+            }
+        });
+
+        res.json({
+            success: true,
+            articles,
+            count: articles.length
+        });
+    } catch (error: any) {
+        console.error('Error fetching feed articles:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch feed articles',
+            message: error.message,
+        });
+    }
+});
+
 // Health check
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -203,6 +227,7 @@ app.listen(PORT, () => {
     console.log(`   GET /api/articles/by-date - Get articles by date range`);
     console.log(`   GET /api/topics - Get all unique topics`);
     console.log(`   GET /api/stats - Get statistics`);
+    console.log(`   GET /api/feed - Get all summarized articles for feed`);
     console.log(`   GET /health - Health check`);
 });
 
