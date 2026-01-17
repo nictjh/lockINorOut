@@ -19,6 +19,8 @@
     k.loadSprite("spectacles", "/assets/spectacles.png");
     k.loadSprite("default", "/assets/default.png");
     k.loadSprite("mouse", "/assets/mouse.png");
+    k.loadSprite("webcam", "/assets/webcam.png");
+    k.loadSprite("vrhead", "/assets/vrhead.png");
     k.loadSprite("finalLook", "/assets/spectaclesFinal.png");
 
     // 2. The Laptop Base
@@ -49,9 +51,11 @@
 
     // 4. Menu Items (Stacked at center - users dig for spectacles)
     const itemsData = [
+      { name: "Webcam", sprite: "webcam", isCorrect: false },
       { name: "Default", sprite: "default", isCorrect: false },
-      { name: "Spectacles", sprite: "spectacles", isCorrect: true },
+      { name: "VR Headset", sprite: "vrhead", isCorrect: false },
       { name: "Mouse", sprite: "mouse", isCorrect: false },
+      { name: "Spectacles", sprite: "spectacles", isCorrect: true },
     ];
 
     const stackX = 400; // Center of screen
@@ -63,7 +67,7 @@
         k.sprite(item.sprite),
         k.pos(stackX + (i * stackOffset), stackY + (i * stackOffset)),
         k.scale(item.sprite === "default" ? 0.2 : 0.6),
-        k.z(i), // Stack depth - later items on top
+        k.z(itemsData.length - 1 - i), // Flip stack: Spectacles is behind
         k.area(),
         k.anchor("center"),
         "draggable",
@@ -89,12 +93,22 @@
         // SLOW REVEAL: Fade in the moustache over 1.5 seconds
         k.tween(0, 1, 1.5, (val) => moustacheFace.opacity = val, k.easings.easeInQuad);
 
+        // Return all items to stack position
+        const stackX = 400;
+        const stackY = 380;
+        const stackOffset = 8;
+        k.get("draggable").forEach((obj, i) => {
+          obj.pos = k.vec2(stackX + (i * stackOffset), stackY + (i * stackOffset));
+        });
+
         // Wait for fade to finish, then show Svelte UI
         k.wait(2, () => {
           gameFinished = true;
         });
+      } else {
+        // Wrong item: shake feedback
+        k.shake(8);
       }
-      // Items stay where they're placed - no snapping back!
       curDrag = null;
     });
 
