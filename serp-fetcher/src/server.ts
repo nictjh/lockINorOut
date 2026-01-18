@@ -226,7 +226,7 @@ app.post('/api/scrape-and-summarize', async (req, res) => {
 
                 try {
                     console.log(`\n=== Phase 1: Scraping ${website} for interest: ${interest} ===`);
-                    
+
                     // Phase 1: Fetch article links from specific website
                     const articles = await fetchArticles(interest, website, websites);
 

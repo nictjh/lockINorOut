@@ -51,7 +51,7 @@ async function scrapeAndUpdateFeed(context: vscode.ExtensionContext) {
 		}
 
 		// Clean up website URLs (remove https:// if present)
-		const cleanedWebsites = websites.map(site => 
+		const cleanedWebsites = websites.map(site =>
 			site.replace('https://', '').replace('http://', '')
 		);
 
