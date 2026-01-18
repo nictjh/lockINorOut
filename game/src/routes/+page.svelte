@@ -8,6 +8,7 @@
     summary: string;
     source?: string;
     url?: string;
+    topic?: string;
     timestamp: string;
   }
 
@@ -52,8 +53,14 @@
   };
 
   const saveStats = () => {
-    localStorage.setItem('lockin_stats', JSON.stringify(stats));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('lockin_stats', JSON.stringify(stats));
+    }
   };
+
+
+  // Derived unique topics from feed for the header
+  $: activeTopics = [...new Set(feedItems.map(i => i.topic).filter(Boolean))];
 
   const checkStreak = () => {
     const today = new Date().toDateString();
@@ -194,8 +201,15 @@
 
           <!-- Header -->
           <div class="flex justify-between items-start mb-6 transition-opacity {expandedItem === item.id ? 'opacity-30' : 'opacity-100'}">
-            <div class="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-[10px] font-bold text-white uppercase tracking-widest border border-white/20">
-              {item.source || 'Article'}
+            <div class="flex items-center gap-2">
+              <div class="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-[10px] font-bold text-white uppercase tracking-widest border border-white/20">
+                {item.source || 'Article'}
+              </div>
+              {#if item.topic}
+                <div class="px-2 py-1 rounded-full bg-purple-500/20 text-[10px] font-bold text-purple-200 uppercase tracking-wider border border-purple-500/30">
+                  #{item.topic}
+                </div>
+              {/if}
             </div>
             <span class="text-5xl font-black text-white/20 select-none tracking-tighter">📰</span>
           </div>
