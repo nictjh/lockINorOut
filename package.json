@@ -1,7 +1,7 @@
 {
   "name": "copilot-generation-overlay",
-  "displayName": "Copilot Generation Overlay",
-  "description": "Shows an overlay during Copilot generation with a popup to dismiss when finished",
+  "displayName": "IdleMode",
+  "description": "Turn idle scrolling into focused micro-learning and lightweight play—right inside your editor.",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.90.0"
@@ -18,17 +18,17 @@
     "commands": [
       {
         "command": "copilot-generation-overlay.chatSend",
-        "title": "FocusLock: Chat Send"
+        "title": "IdleMode: Chat Send"
       },
       {
         "command": "copilot-generation-overlay.scrapeAndUpdate",
-        "title": "FocusLock: Scrape and Update Feed"
+        "title": "IdleMode: Scrape and Update Feed"
       }
     ],
     "configuration": {
-      "title": "FocusLock",
+      "title": "IdleMode",
       "properties": {
-        "focuslock.interests": {
+        "idlemode.interests": {
           "type": "array",
           "default": ["AI", "Startups"],
           "description": "List of topics you're interested in for your personalized feed",
@@ -36,7 +36,7 @@
             "type": "string"
           }
         },
-        "focuslock.websites": {
+        "idlemode.websites": {
           "type": "array",
           "default": ["https://tldr.tech"],
           "description": "Websites or sources you want to get content from (e.g., LinkedIn, Newsletter, Twitter, Reddit)",

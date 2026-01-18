@@ -37,7 +37,7 @@ export function activate(context: vscode.ExtensionContext) {
 async function scrapeAndUpdateFeed(context: vscode.ExtensionContext) {
 	try {
 		// Get configuration
-		const config = vscode.workspace.getConfiguration('focuslock');
+		const config = vscode.workspace.getConfiguration('idlemode');
 		const interests = config.get<string[]>('interests') || [];
 		const websites = config.get<string[]>('websites') || [];
 
