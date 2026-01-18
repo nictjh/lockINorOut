@@ -1,8 +1,8 @@
-# IdleMode
+# Leo's Last Hope
 
 **Combat doom scrolling. Stay focused. Lock in.**
 
-IdleMode is a VS Code extension designed to keep your attention on your screen during those critical moments when you're waiting for Copilot or Codex to generate code. Instead of reaching for your phone and losing focus, IdleMode serves you a personalized feed of curated articles on topics you care about—keeping your mind engaged and your focus intact.
+Leo's Last Hope is a VS Code extension designed to keep your attention on your screen during those critical moments when you're waiting for Copilot or Codex to generate code. Instead of reaching for your phone and losing focus, Leo's Last Hope serves you a personalized feed of curated articles on topics you care about—keeping your mind engaged and your focus intact.
 
 ## The Problem
 
@@ -12,7 +12,7 @@ As a developer, those 1-2 minute wait times while Copilot generates code are pro
 
 ## The Solution
 
-IdleMode fills those idle moments with value in two ways:
+Leo's Last Hope fills those idle moments with value in two ways:
 
 **Option 1: Stay Sharp with Articles**
 1. **Instant Feed Display** – Press `Cmd+Shift+G` (or trigger manually) to see a personalized feed
@@ -33,7 +33,7 @@ Instead of doom scrolling on your phone, you're:
 ## Features
 
 ### 🎯 Personalized Feed
-Configure your interests and favorite sources in VS Code settings. IdleMode learns what matters to you.
+Configure your interests and favorite sources in VS Code settings. Leo's Last Hope learns what matters to you.
 
 ### 🚀 One-Command Updates
 Press **Cmd+Shift+G** to scrape 4 new articles from your configured websites, summarize them with AI, and add them to your feed instantly.
@@ -118,7 +118,7 @@ npm run dev  # Starts on http://localhost:5173
 2. Press `F5` to launch the VS Code extension host
 3. The extension loads automatically
 
-### Use IdleMode
+### Use Leo's Last Hope
 
 **Option 1: Manual Trigger**
 ```
@@ -133,7 +133,7 @@ Cmd+Shift+P  →  Search "IdleMode: Scrape and Update Feed"  →  Enter
 ## Architecture
 
 ```
-VS Code Extension (IdleMode)
+VS Code Extension (Leo's Last Hope)
     ↓
     ├─ Reads configuration (interests, websites)
     └─ Calls API endpoint on Cmd+Shift+G
@@ -223,7 +223,7 @@ GET /api/feed
 
 ## Configuration
 
-Edit VS Code settings to personalize IdleMode:
+Edit VS Code settings to personalize Leo's Last Hope:
 
 ```json
 {
@@ -245,7 +245,7 @@ Note: Don't include `https://` in website URLs. Just use `tldr.tech`, not `https
 
 ### Reading Mode (Focused Learning)
 1. **You're waiting for Copilot** – Code generation is running
-2. **Press Cmd+Shift+G** – IdleMode springs into action
+2. **Press Cmd+Shift+G** – Leo's Last Hope springs into action
 3. **Backend scrapes** – Exa API searches your configured websites for articles matching your interests
 4. **Content fetched** – Full article text is retrieved from each URL
 5. **AI summarizes** – OpenAI creates concise 3-4 paragraph summaries
@@ -287,7 +287,7 @@ VITE_APP_NAME=IdleMode
 
 ## Troubleshooting
 
-**"Please configure IdleMode interests and websites in settings first"**
+**"Please configure Leo's Last Hope interests and websites in settings first"**
 - Open VS Code Settings (`Cmd+,`)
 - Search for "IdleMode"
 - Add your interests and websites
@@ -341,7 +341,7 @@ attemptVSCExt/
 
 ## Contributing
 
-Found a bug? Want to help improve IdleMode? PRs are welcome!
+Found a bug? Want to help improve Leo's Last Hope? PRs are welcome!
 
 ## License
 
@@ -352,3 +352,4 @@ leCOOKEd
 **Stay on screen. Stay sharp. Stay locked in.**
 
 *Built with ❤️ by developers, for developers who refuse to doom scroll.*
+Leo we got you.
