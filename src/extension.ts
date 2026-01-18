@@ -25,6 +25,71 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	context.subscriptions.push(chatSendCommand);
+
+	// NEW: Command to scrape and update feed with configured interests/websites
+	const scrapeCommand = vscode.commands.registerCommand('copilot-generation-overlay.scrapeAndUpdate', async () => {
+		await scrapeAndUpdateFeed(context);
+	});
+
+	context.subscriptions.push(scrapeCommand);
+}
+
+async function scrapeAndUpdateFeed(context: vscode.ExtensionContext) {
+	try {
+		// Get configuration
+		const config = vscode.workspace.getConfiguration('focuslock');
+		const interests = config.get<string[]>('interests') || [];
+		const websites = config.get<string[]>('websites') || [];
+
+		// Validate configuration
+		if (interests.length === 0 || websites.length === 0) {
+			vscode.window.showErrorMessage(
+				'Please configure FocusLock interests and websites in settings first',
+				{ modal: false }
+			);
+			return;
+		}
+
+		// Clean up website URLs (remove https:// if present)
+		const cleanedWebsites = websites.map(site => 
+			site.replace('https://', '').replace('http://', '')
+		);
+
+		vscode.window.showInformationMessage('🔄 Scraping articles with your interests and websites...', { modal: false });
+
+		// Call the API endpoint
+		const response = await fetch('http://localhost:3000/api/scrape-and-summarize', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				interests: interests,
+				websites: cleanedWebsites
+			})
+		});
+
+		if (!response.ok) {
+			throw new Error(`API returned ${response.status}`);
+		}
+
+		const data = await response.json();
+
+		if ((data as any).success) {
+			vscode.window.showInformationMessage(
+				`✓ Successfully scraped and summarized ${(data as any).articlesCount} articles!`,
+				{ modal: false }
+			);
+		} else {
+			vscode.window.showErrorMessage(`Failed to scrape: ${(data as any).error}`, { modal: false });
+		}
+	} catch (error: any) {
+		vscode.window.showErrorMessage(
+			`Error scraping feed: ${error.message}`,
+			{ modal: false }
+		);
+		console.error('Scrape error:', error);
+	}
 }
 
 function openOverlayImmediately() {

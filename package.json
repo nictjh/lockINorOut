@@ -19,6 +19,10 @@
       {
         "command": "copilot-generation-overlay.chatSend",
         "title": "FocusLock: Chat Send"
+      },
+      {
+        "command": "copilot-generation-overlay.scrapeAndUpdate",
+        "title": "FocusLock: Scrape and Update Feed"
       }
     ],
     "configuration": {
@@ -47,6 +51,10 @@
         "key": "enter",
         "command": "copilot-generation-overlay.chatSend",
         "when": "inChat"
+      },
+      {
+        "key": "cmd+shift+g",
+        "command": "copilot-generation-overlay.scrapeAndUpdate"
       }
     ]
   },
