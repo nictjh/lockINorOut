@@ -24,12 +24,6 @@
   let loading = true;
   let error = '';
 
-  // Locking & Transition State
-  let showTransition = true;
-  let canExit = false;
-  let timeLeft = 60; // 60 seconds lock
-  let timerInterval: any;
-
   // Analytics State
   let stats: UserStats = {
     streak: 0,
@@ -84,21 +78,7 @@
   };
 
   onMount(async () => {
-    // 1. Transition Animation
-    setTimeout(() => {
-      showTransition = false;
-    }, 4000);
-
-    // 2. Locking Timer
-    timerInterval = setInterval(() => {
-      timeLeft--;
-      if (timeLeft <= 0) {
-        canExit = true;
-        clearInterval(timerInterval);
-      }
-    }, 1000);
-
-    // 3. Load & Update Stats
+    // Load & Update Stats
     const stored = localStorage.getItem('lockin_stats');
     if (stored) {
       stats = JSON.parse(stored);
@@ -130,31 +110,12 @@
   });
 
   onDestroy(() => {
-    if (timerInterval) clearInterval(timerInterval);
     if (timeTracker) clearInterval(timeTracker);
     saveStats();
   });
 </script>
 
 <main class="h-screen w-full overflow-y-scroll snap-y snap-mandatory bg-[#05070a] scroll-smooth relative">
-
-  <!-- Transition Overlay -->
-  {#if showTransition}
-    <div 
-      transition:fade={{ duration: 1000 }}
-      class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center p-8 text-center"
-    >
-      <h1 class="text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 mb-6 animate-pulse">
-        While you wait...
-      </h1>
-      <p 
-        in:fly={{ y: 20, duration: 800, delay: 1000 }} 
-        class="text-xl text-gray-400 font-light"
-      >
-        Why not catch up on some things you might have missed?
-      </p>
-    </div>
-  {/if}
 
   <!-- Streak & Stats Display -->
   <div class="fixed top-8 right-8 z-40 flex flex-col items-end gap-2 pointer-events-none mix-blend-difference">
@@ -256,17 +217,10 @@
 
   <!-- Exit Button -->
   <div class="fixed top-8 left-8 z-50">
-    {#if canExit}
-      <a href="/game" class="group flex items-center gap-3 px-4 py-2 bg-black/40 backdrop-blur-xl border border-white/10 rounded-full text-white hover:border-white/40 transition-all">
-        <span class="group-hover:-translate-x-1 transition-transform">←</span>
-        <span class="text-sm font-medium">Exit Feed</span>
-      </a>
-    {:else}
-      <div class="flex items-center gap-3 px-4 py-2 bg-black/20 backdrop-blur-sm border border-white/5 rounded-full text-white/40 cursor-not-allowed">
-        <span class="w-4 h-4 border-2 border-white/20 border-t-white/60 rounded-full animate-spin"></span>
-        <span class="text-sm font-medium tabular-nums">Locked for {timeLeft}s</span>
-      </div>
-    {/if}
+    <a href="/game" class="group flex items-center gap-3 px-4 py-2 bg-black/40 backdrop-blur-xl border border-white/10 rounded-full text-white hover:border-white/40 transition-all">
+      <span class="group-hover:-translate-x-1 transition-transform">←</span>
+      <span class="text-sm font-medium">Exit Feed</span>
+    </a>
   </div>
 </main>
 
