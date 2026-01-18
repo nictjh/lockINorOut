@@ -50,7 +50,7 @@
 <main class="min-h-screen w-full bg-[#05070a] flex items-center justify-center p-4 relative">
   <div class="fixed top-8 left-8 z-50">
     <a
-      href="/game"
+      href="/"
       class="group flex items-center gap-3 px-4 py-2 bg-black/40 backdrop-blur-xl border border-white/10 rounded-full text-white hover:border-white/40 transition-all"
     >
       <span class="group-hover:-translate-x-1 transition-transform">←</span>

@@ -84,12 +84,13 @@
 <svelte:window on:keydown={handleInput} />
 
 <main class="min-h-screen w-full bg-[#05070a] flex items-center justify-center p-4 text-xs relative">
-  <div class="absolute top-4 left-4 z-50">
+  <div class="fixed top-8 left-8 z-50">
     <a
-      href="/game"
-      class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-semibold transition-all text-sm"
+      href="/"
+      class="group flex items-center gap-3 px-4 py-2 bg-black/40 backdrop-blur-xl border border-white/10 rounded-full text-white hover:border-white/40 transition-all"
     >
-      ← Back (Read)
+      <span class="group-hover:-translate-x-1 transition-transform">←</span>
+      <span class="text-sm font-medium">Back (Read)</span>
     </a>
   </div>
   <div class="relative w-[800px] border-4 border-gray-700 rounded-xl overflow-hidden flex flex-col shadow-2xl bg-gray-900 transition-all duration-500 ease-in-out">
