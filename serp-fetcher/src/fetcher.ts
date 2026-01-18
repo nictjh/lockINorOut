@@ -132,7 +132,7 @@ export async function fetchArticles(topic: string, category: string, domains?: s
     try {
         // Initial search
         const searchResult = await exa.searchAndContents(
-            `${topic}`,
+            `new niche prominent interesting ${topic} ${category} analysis`,
             {
                 type: "neural",
                 useAutoprompt: true,

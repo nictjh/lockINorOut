@@ -6,8 +6,8 @@ import path from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const TOPICS = ['cybersecurity', 'artificial intelligence'];
-const CATEGORIES = ['News', 'Industry Developments', 'Blogs'];
+const TOPICS = ['cybersecurity', 'artificial intelligence', 'software engineering', 'quantum computing'];
+const CATEGORIES = ['News', 'Industry Developments', 'Blogs', 'Research Summaries', 'Government & Policy'];
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -57,12 +57,18 @@ async function main() {
                     topic: topic,
                     category: category,
                     content: { not: null } // Only process ones with content
-                }
+                },
+                take: 3 // Limit to 3 articles per topic/category
             });
 
             console.log(`Found ${storedArticles.length} stored articles to process`);
 
+            // Track processed count
+            let processedCount = 0;
+
             for (const article of storedArticles) {
+                if (processedCount >= 3) break; // Hard limit just in case
+
                 try {
                     if (!article.content) continue;
 
@@ -73,6 +79,7 @@ async function main() {
 
                     if (existingSummary) {
                         console.log(`Already summarized: ${article.title}`);
+                        processedCount++;
                         continue;
                     }
 
@@ -104,6 +111,7 @@ async function main() {
                             }
                         });
                         console.log(`✓ Saved summary for: ${article.title}`);
+                        processedCount++;
                     } else {
                         console.warn(`Failed to get summary for: ${article.title}`);
                     }

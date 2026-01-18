@@ -30,7 +30,10 @@
       "properties": {
         "idlemode.interests": {
           "type": "array",
-          "default": ["AI", "Startups"],
+          "default": [
+            "AI",
+            "Startups"
+          ],
           "description": "List of topics you're interested in for your personalized feed",
           "items": {
             "type": "string"
@@ -38,7 +41,9 @@
         },
         "idlemode.websites": {
           "type": "array",
-          "default": ["https://tldr.tech"],
+          "default": [
+            "https://tldr.tech"
+          ],
           "description": "Websites or sources you want to get content from (e.g., LinkedIn, Newsletter, Twitter, Reddit)",
           "items": {
             "type": "string"
