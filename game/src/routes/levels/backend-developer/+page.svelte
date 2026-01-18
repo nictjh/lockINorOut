@@ -188,7 +188,16 @@
   });
 </script>
 
-<main class="min-h-screen w-full bg-[#05070a] flex items-center justify-center p-4">
+<main class="min-h-screen w-full bg-[#05070a] flex items-center justify-center p-4 relative">
+  <div class="fixed top-8 left-8 z-50">
+    <a
+      href="/game"
+      class="group flex items-center gap-3 px-4 py-2 bg-black/40 backdrop-blur-xl border border-white/10 rounded-full text-white hover:border-white/40 transition-all"
+    >
+      <span class="group-hover:-translate-x-1 transition-transform">←</span>
+      <span class="text-sm font-medium">Back (Read)</span>
+    </a>
+  </div>
   <div class="relative w-[800px] h-[600px] border-4 border-gray-700 rounded-xl overflow-hidden flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.8)] bg-gray-900">
 
     <div class="p-4 bg-gray-950 text-green-500 font-mono text-sm border-b border-gray-800 flex justify-between">

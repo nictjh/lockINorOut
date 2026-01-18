@@ -30,8 +30,17 @@
 </script>
 
 <main class="min-h-screen w-full bg-[#05070a] flex items-center justify-center p-4">
+  <div class="fixed top-8 left-8 z-50">
+    <a
+      href="/"
+      class="group flex items-center gap-3 px-4 py-2 bg-black/40 backdrop-blur-xl border border-white/10 rounded-full text-white hover:border-white/40 transition-all"
+    >
+      <span class="group-hover:-translate-x-1 transition-transform">←</span>
+      <span class="text-sm font-medium">Back (Read)</span>
+    </a>
+  </div>
   <div class="text-center">
-    <h1 class="text-5xl font-bold text-purple-400 mb-4">CS Terms Wrong</h1>
+    <h1 class="text-5xl font-bold text-purple-400 mb-4">CS Myth Busted</h1>
     <p class="text-xl text-gray-300 mb-8">Learn what computer science terms actually mean...</p>
     {#if allLevelsComplete}
       <div class="text-2xl font-bold text-green-400 animate-pulse">

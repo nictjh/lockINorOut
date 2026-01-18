@@ -47,7 +47,15 @@
   }
 </style>
 
-<main class="min-h-screen w-full bg-[#05070a] flex items-center justify-center p-4">
+<main class="min-h-screen w-full bg-[#05070a] flex items-center justify-center p-4 relative">
+  <div class="absolute top-4 left-4 z-50">
+    <a
+      href="/game"
+      class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-semibold transition-all text-sm"
+    >
+      ← Back (Read)
+    </a>
+  </div>
   <div class="relative w-[800px] h-[600px] border-4 border-gray-700 rounded-xl overflow-hidden flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.5)]">
     
     <div class="p-4 bg-gray-900 text-green-400 font-mono text-lg border-b border-gray-800">
