@@ -4,6 +4,10 @@
 
 Leo's Last Hope is a VS Code extension designed to keep your attention on your screen during those critical moments when you're waiting for Copilot or Codex to generate code. Instead of reaching for your phone and losing focus, Leo's Last Hope serves you a personalized feed of curated articles on topics you care about—keeping your mind engaged and your focus intact.
 
+
+https://github.com/user-attachments/assets/df9542ae-472e-45dd-bc1f-8b4ff5db53db
+
+
 ## The Problem
 
 As a developer, those 1-2 minute wait times while Copilot generates code are productivity killers. The screen goes silent. Your brain gets restless. You reach for your phone. You doom scroll. By the time the code arrives, you've already mentally checked out. Getting back into flow state takes minutes.
